@@ -62,7 +62,8 @@ def createCharacter(story, info, index, action = ""):
              Only make dialog for your character.
              The output should focus on creating dialog that is RELEVANT TO THE action. 
              Your output should be between 1-50 words
-             Your output should ALWAYS end with a clear space followed by ONLY one of the 4 emotions angry, neutral, sad, happy.
+             Your output should ALWAYS end with a clear space followed by ONLY one of the following emotions angry, neutral, sad, happy.
+             Do NOT include anyother emotions.
              Include the emotions in curly brackets"""},
             {'role':'user', 'content':f"""You are: {info[index]["Name"]}. Your appearence: {info[index]["appearance"]}.
              Your personality: {info[index]["personality"]}. The story so far: {story}. 
@@ -138,9 +139,12 @@ def generate_cart(prompt, emotion):
 st.title("Narrator Simulator")
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if st.session_state.promptNum  > 1:
+    st.session_state.prompt = st.chat_input("Continue")
+    st.image(st.session_state.images[0]["environment"])
+
 for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
+        st.markdown(message)
 
 # Kepps a log of the story
 st.session_state.story = f"{st.session_state.story} Part {st.session_state.promptNum}: {st.session_state.prompt}."
@@ -177,23 +181,19 @@ elif st.session_state.promptNum  == 1:
          'past':'', 'parthers':''
         })
         # Character 1 image generation
-        #neutral = characterArtPrompt(description, "neutral")
-        #happy = characterArtPrompt(description, "happy")
-        #sad = characterArtPrompt(description, "sad")
-        #angry = characterArtPrompt(description, "sad")
         neutral = generate_cart(description, "neutral")
-        #happy = generate_cart(description, "happy")
-        #sad = generate_cart(description,"sad")
-        #angry = generate_cart(description,"angry")
+        happy = generate_cart(description, "happy")
+        sad = generate_cart(description,"sad")
+        angry = generate_cart(description,"angry")
         st.image(neutral)
-        #st.image(happy)
-        #st.image(sad)
-        #st.image(angry)
-        st.session_state.images.append({'neutral':neutral, 'happy': neutral, 'sad':neutral,'angry':neutral})
+        st.image(happy)
+        st.image(sad)
+        st.image(angry)
+        st.session_state.images.append({'neutral':neutral, 'happy': happy, 'sad':sad,'angry':angry})
 
         #Get the character 2 info
         info2 = output[secondCharIndex:]
-        name = info1[info2.find("*Name:*") + 8 :info2.find("*Description:*") -2]
+        name = info2[info2.find("*Name:*") + 8 :info2.find("*Description:*") -2]
         description = info2[info2.find("*Description:*")+14:info2.find("*Personality:*")-2]
         personality = info2[info2.find("*Personality:*")+14:]
         st.session_state.Characters.append({
@@ -202,19 +202,19 @@ elif st.session_state.promptNum  == 1:
         })
         # Character 2 image generation
         neutral = generate_cart(description, "neutral")
-        #happy = generate_cart(description, "happy")
-        #sad = generate_cart(description,"sad")
-        #angry = generate_cart(description,"angry")
+        happy = generate_cart(description, "happy")
+        sad = generate_cart(description,"sad")
+        angry = generate_cart(description,"angry")
         st.image(neutral)
-        #st.image(happy)
-        #st.image(sad)
-        #st.image(angry)
-        st.session_state.images.append({'neutral':neutral, 'happy': neutral, 'sad':neutral,'angry':neutral})
+        st.image(happy)
+        st.image(sad)
+        st.image(angry)
+        st.session_state.images.append({'neutral':neutral, 'happy': happy, 'sad':sad,'angry':angry})
 
         st.write(st.session_state.story)
         st.write(info1)
         st.write(info2)
-        st.session_state.messages.append({'role':'Narrator', 'content':st.session_state.story})
+        st.session_state.messages.append(st.session_state.story)
         st.session_state.promptNum  += 1
 
         if st.button("Start Scenario"):
@@ -223,34 +223,26 @@ elif st.session_state.promptNum  == 1:
 elif st.session_state.promptNum  == 13:
     st.write("Story Over. Sorry thats as far as you can go.")
 else:
-    st.session_state.prompt = st.chat_input("Continue")
-    st.image(st.session_state.images[0]["environment"])
     if st.session_state.prompt:
         st.session_state.messages.append(st.session_state.prompt)
-        with st.chat_message("Narrator"):
-            st.write(f"Narrator\n {st.session_state.prompt}")
+        st.markdown(f"**Narrator** \n {st.session_state.prompt}")
 
         char1 = createCharacter(st.session_state.story, st.session_state.Characters, 1, st.session_state.prompt)
         emotion = char1[char1.find('{')+1:char1.find('}')]
         st.image(st.session_state.images[1][emotion])
-        with st.chat_message(st.session_state.Characters[1]['Name']):
-            st.write(f"{st.session_state.Characters[1]['Name']}\n{char1}")
+
+        st.markdown(f"** {st.session_state.Characters[1]['Name']} ** \n {char1}")
         st.session_state.Characters[1]["past"] = char1
         st.session_state.Characters[2]["parthers"] = char1
-        st.session_state.messages.append({'role':f"{st.session_state.Characters[1]['Name']}", 'content':char1})
+        st.session_state.messages.append(f"** {st.session_state.Characters[1]['Name']} ** \n {char1}")
 
         char2 = createCharacter(st.session_state.story, st.session_state.Characters, 2, st.session_state.prompt)
         emotion = char2[char2.find('{')+1:char2.find('}')]
         st.image(st.session_state.images[2][emotion])
-        with st.chat_message(st.session_state.Characters[2]['Name']):
-            st.write(f"{st.session_state.Characters[2]["Name"]}\n{char2}")
+
+        st.markdown(f"** {st.session_state.Characters[2]['Name']} ** \n {char2}")
         st.session_state.Characters[2]["past"] = char2
         st.session_state.Characters[1]["parthers"] = char2
-        st.session_state.messages.append({'role':f"{st.session_state.Characters[2]['Name']}", 'content':char2})
+        st.session_state.messages.append(f"** {st.session_state.Characters[2]['Name']} ** \n {char2}")
 
         st.session_state.promptNum  += 1
-
-
-#st.write(st.session_state.story)
-st.write(st.session_state.promptNum)
-st.write(st.session_state.prompt)
