@@ -182,14 +182,14 @@ elif st.session_state.promptNum  == 1:
         #sad = characterArtPrompt(description, "sad")
         #angry = characterArtPrompt(description, "sad")
         neutral = generate_cart(description, "neutral")
-        happy = generate_cart(description, "happy")
-        sad = generate_cart(description,"sad")
-        angry = generate_cart(description,"angry")
+        #happy = generate_cart(description, "happy")
+        #sad = generate_cart(description,"sad")
+        #angry = generate_cart(description,"angry")
         st.image(neutral)
-        st.image(happy)
-        st.image(sad)
-        st.image(angry)
-        st.session_state.images.append({'neutral':neutral, 'happy': happy, 'sad':sad,'angry':angry})
+        #st.image(happy)
+        #st.image(sad)
+        #st.image(angry)
+        st.session_state.images.append({'neutral':neutral, 'happy': neutral, 'sad':neutral,'angry':neutral})
 
         #Get the character 2 info
         info2 = output[secondCharIndex:]
@@ -202,14 +202,14 @@ elif st.session_state.promptNum  == 1:
         })
         # Character 2 image generation
         neutral = generate_cart(description, "neutral")
-        happy = generate_cart(description, "happy")
-        sad = generate_cart(description,"sad")
-        angry = generate_cart(description,"angry")
+        #happy = generate_cart(description, "happy")
+        #sad = generate_cart(description,"sad")
+        #angry = generate_cart(description,"angry")
         st.image(neutral)
-        st.image(happy)
-        st.image(sad)
-        st.image(angry)
-        st.session_state.images.append({'neutral':neutral, 'happy': happy, 'sad':sad,'angry':angry})
+        #st.image(happy)
+        #st.image(sad)
+        #st.image(angry)
+        st.session_state.images.append({'neutral':neutral, 'happy': neutral, 'sad':neutral,'angry':neutral})
 
         st.write(st.session_state.story)
         st.write(info1)
@@ -227,25 +227,26 @@ else:
     st.image(st.session_state.images[0]["environment"])
     if st.session_state.prompt:
         st.session_state.messages.append(st.session_state.prompt)
-        st.write(f"Narrator\n{st.session_state.prompt}")
+        with st.chat_message("Narrator"):
+            st.write(f"Narrator\n {st.session_state.prompt}")
 
         char1 = createCharacter(st.session_state.story, st.session_state.Characters, 1, st.session_state.prompt)
-        emotion = st[char1.find('{')+1:char1.find('}')]
+        emotion = char1[char1.find('{')+1:char1.find('}')]
         st.image(st.session_state.images[1][emotion])
         with st.chat_message(st.session_state.Characters[1]['Name']):
             st.write(f"{st.session_state.Characters[1]['Name']}\n{char1}")
         st.session_state.Characters[1]["past"] = char1
         st.session_state.Characters[2]["parthers"] = char1
-        st.session_state.messages.append({'role':st.session_state.Characters[1]['Name'], 'content':char1})
+        st.session_state.messages.append({'role':f"{st.session_state.Characters[1]['Name']}", 'content':char1})
 
         char2 = createCharacter(st.session_state.story, st.session_state.Characters, 2, st.session_state.prompt)
-        emotion = st[char2.find('{')+1:char2.find('}')]
-        st.image(st.session_state.images[1][emotion])
+        emotion = char2[char2.find('{')+1:char2.find('}')]
+        st.image(st.session_state.images[2][emotion])
         with st.chat_message(st.session_state.Characters[2]['Name']):
-            st.write(f"{st.session_state.Characters[2]['Name']}\n{char2}")
+            st.write(f"{st.session_state.Characters[2]["Name"]}\n{char2}")
         st.session_state.Characters[2]["past"] = char2
         st.session_state.Characters[1]["parthers"] = char2
-        st.session_state.messages.append({'role':st.session_state.Characters[2]['Name'], 'content':char2})
+        st.session_state.messages.append({'role':f"{st.session_state.Characters[2]['Name']}", 'content':char2})
 
         st.session_state.promptNum  += 1
 
