@@ -123,9 +123,8 @@ def generate_cart(prompt, emotion):
     response = client.images.generate(
         model='dall-e-3',
         prompt=f"""
-        You are tasked with generating a prompt for an AI image Generator.
         A description of a character will be given and you have to analyse and digest the contents, and extra the main elements or essence of the character
-        Write a short prompt to produce an interesting and relevant character art that represents the emotion given.
+        create interesting and relevant character art that represents the emotion given. The emotion should be CLEARLY seen in the art.
         The style MUST be in black and white acsii art.
         The description: {prompt}. The emotion of the character:{emotion}""",
         size='1024x1024',
@@ -163,6 +162,11 @@ elif st.session_state.promptNum  == 1:
         secondCharIndex = output.find('3.')
         # Story
         st.session_state.story = output[:firstCharIndex]
+        #Environment prompt
+        environmentPrompt = scene_prompt(st.session_state.story)
+        environment = generate_art(environmentPrompt)
+        st.session_state.images.append({'environment':environment})
+
         # Get the character 1 info
         info1 = output[firstCharIndex:secondCharIndex]
         name = info1[info1.find("*Name:*") + 8 :info1.find("*Description:*") -2]
@@ -206,10 +210,6 @@ elif st.session_state.promptNum  == 1:
         st.image(sad)
         st.image(angry)
         st.session_state.images.append({'neutral':neutral, 'happy': happy, 'sad':sad,'angry':angry})
-        #Environment prompt
-        environmentPrompt = scene_prompt(st.session_state.story)
-        environment = generate_art(environmentPrompt)
-        st.session_state.images.append({'environment':environment})
 
         st.write(st.session_state.story)
         st.write(info1)
@@ -220,27 +220,33 @@ elif st.session_state.promptNum  == 1:
         if st.button("Start Scenario"):
              st.rerun()
 
-elif st.session_state.promptNum  == 10:
+elif st.session_state.promptNum  == 13:
     st.write("Story Over. Sorry thats as far as you can go.")
 else:
     st.session_state.prompt = st.chat_input("Continue")
     st.image(st.session_state.images[0]["environment"])
     if st.session_state.prompt:
         st.session_state.messages.append(st.session_state.prompt)
-        st.write(st.session_state.prompt)
+        st.write(f"Narrator\n{st.session_state.prompt}")
+
         char1 = createCharacter(st.session_state.story, st.session_state.Characters, 1, st.session_state.prompt)
+        emotion = st[char1.find('{')+1:char1.find('}')]
+        st.image(st.session_state.images[1][emotion])
         with st.chat_message(st.session_state.Characters[1]['Name']):
-            st.write(char1)
+            st.write(f"{st.session_state.Characters[1]['Name']}\n{char1}")
         st.session_state.Characters[1]["past"] = char1
         st.session_state.Characters[2]["parthers"] = char1
         st.session_state.messages.append({'role':st.session_state.Characters[1]['Name'], 'content':char1})
 
         char2 = createCharacter(st.session_state.story, st.session_state.Characters, 2, st.session_state.prompt)
+        emotion = st[char2.find('{')+1:char2.find('}')]
+        st.image(st.session_state.images[1][emotion])
         with st.chat_message(st.session_state.Characters[2]['Name']):
-            st.write(char2)
+            st.write(f"{st.session_state.Characters[2]['Name']}\n{char2}")
         st.session_state.Characters[2]["past"] = char2
         st.session_state.Characters[1]["parthers"] = char2
         st.session_state.messages.append({'role':st.session_state.Characters[2]['Name'], 'content':char2})
+
         st.session_state.promptNum  += 1
 
 
