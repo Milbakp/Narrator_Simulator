@@ -70,7 +70,23 @@ def createCharacter(story, info, index, action = ""):
     )
     return response.choices[0].message.content
 
-def cover_art(prompt):
+def art_prompt(prompt):
+  response = client.chat.completions.create(
+      model='gpt-4o-mini',
+      messages=[
+           {'role':'system','content':"""
+            You are tasked with generating a prompt for an AI image Generator.
+            A story will be given and you have to analyse and digest the contents, and extra the main elements or essence of the story.
+            Write a short prompt to produce an interesting and relevant cover art for the story.
+          """},
+          {'role':'user','content':prompt}
+      ],
+      temperature=1,
+      max_tokens=1000
+  )
+  return response.choices[0].message.content
+
+def generate_art(prompt):
   response = client.images.generate(
       model='dall-e-3',
       prompt=prompt,
@@ -81,7 +97,7 @@ def cover_art(prompt):
   )
   return response.data[0].url
 
-#Star of the web page
+#Star of the web page -------------------------------------
 st.title("Narrator Simulator")
 if "messages" not in st.session_state:
     st.session_state.messages = []
