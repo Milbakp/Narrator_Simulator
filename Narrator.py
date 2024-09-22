@@ -92,23 +92,6 @@ def scene_prompt(prompt):
   )
   return response.choices[0].message.content
 
-def characterArtPrompt(prompt, emotion):
-    response = client.chat.completions.create(
-      model='gpt-4o-mini',
-        messages=[
-            {'role':'system','content':"""
-            You are tasked with generating a prompt for an AI image Generator.
-            A description of a character will be given and you have to analyse and digest the contents, and extra the main elements or essence of the character
-            Write a short prompt to produce an interesting and relevant character art that represents the emotion given.
-            The style MUST be in black and white acsii art.
-            """},
-            {'role':'user','content':f"The description: {prompt}. The emotion of the character:{emotion}"}
-        ],
-        temperature=1,
-        max_tokens=500
-    )
-    return response.choices[0].message.content
-
 def generate_art(prompt):
     response = client.images.generate(
         model='dall-e-3',
@@ -125,7 +108,7 @@ def generate_cart(prompt, emotion):
         model='dall-e-3',
         prompt=f"""
         A description of a character will be given and you have to analyse and digest the contents, and extra the main elements or essence of the character
-        create interesting and relevant character art that represents the emotion given. The emotion should be CLEARLY seen in the art.
+        create interesting and relevant character art that represents the emotion given. The emotion should be CLEARLY seen in the face of the character.
         The style MUST be in black and white acsii art.
         The description: {prompt}. The emotion of the character:{emotion}""",
         size='1024x1024',
@@ -144,7 +127,10 @@ if st.session_state.promptNum  > 1:
     st.image(st.session_state.images[0]["environment"])
 
 for message in st.session_state.messages:
-        st.markdown(message)
+        if(isinstance(message, str)):
+            st.markdown(message)
+        else:
+            st.image(message['image'])
 
 # Kepps a log of the story
 st.session_state.story = f"{st.session_state.story} Part {st.session_state.promptNum}: {st.session_state.prompt}."
@@ -224,12 +210,13 @@ elif st.session_state.promptNum  == 13:
     st.write("Story Over. Sorry thats as far as you can go.")
 else:
     if st.session_state.prompt:
-        st.session_state.messages.append(st.session_state.prompt)
+        st.session_state.messages.append(f"**Narrator** \n {st.session_state.prompt}")
         st.markdown(f"**Narrator** \n {st.session_state.prompt}")
 
         char1 = createCharacter(st.session_state.story, st.session_state.Characters, 1, st.session_state.prompt)
         emotion = char1[char1.find('{')+1:char1.find('}')]
         st.image(st.session_state.images[1][emotion])
+        st.session_state.messages.append({'image':st.session_state.images[1][emotion]})
 
         st.markdown(f"** {st.session_state.Characters[1]['Name']} ** \n {char1}")
         st.session_state.Characters[1]["past"] = char1
@@ -239,6 +226,7 @@ else:
         char2 = createCharacter(st.session_state.story, st.session_state.Characters, 2, st.session_state.prompt)
         emotion = char2[char2.find('{')+1:char2.find('}')]
         st.image(st.session_state.images[2][emotion])
+        st.session_state.messages.append({'image':st.session_state.images[2][emotion]})
 
         st.markdown(f"** {st.session_state.Characters[2]['Name']} ** \n {char2}")
         st.session_state.Characters[2]["past"] = char2
